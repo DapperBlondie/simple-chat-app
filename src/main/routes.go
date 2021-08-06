@@ -10,6 +10,7 @@ func routes() http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Get("/home", handlers.AppConf.Home)
+	mux.Get("/chat-app", handlers.AppConf.WsEndpointHandler)
 
 	return mux
 }

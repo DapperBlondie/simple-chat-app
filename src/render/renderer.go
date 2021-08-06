@@ -7,7 +7,7 @@ import (
 )
 
 var Views = jet.NewSet(
-	jet.NewOSFileSystemLoader("./templates"),
+	jet.NewOSFileSystemLoader("/templates"),
 	jet.InDevelopmentMode(),
 )
 

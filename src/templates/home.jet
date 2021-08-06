@@ -9,5 +9,17 @@
 </head>
 <body>
 <h2>This is Home page</h2>
+
+<script>
+    let socket = null;
+    document.addEventListener("DOMContentLoaded", evt => {
+        socket = new WebSocket("ws://127.0.0.1:8080/chat-app");
+
+        socket.onopen = ev => {
+            console.log("Connected");
+        }
+    })
+</script>
+
 </body>
 </html>
