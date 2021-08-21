@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+type WSConnection struct {
+	MyConn *websocket.Conn
+}
+
 type ApplicationConfig struct {
 }
 
@@ -18,6 +22,14 @@ type WsJsonResponse struct {
 	MessageType string `json:"message_type"`
 }
 
+// WsPayload use for handling user's payload
+type WsPayload struct {
+	Action   string        `json:"action"`
+	Username string        `json:"username"`
+	Message  string        `json:"message"`
+	UserConn *WSConnection `json:"-"`
+}
+
 var AppConf *ApplicationConfig
 
 // TcpUpgrade use for upgrading HTTP request to TCP connection
@@ -26,11 +38,12 @@ var TcpUpgrade = websocket.Upgrader{
 	ReadBufferSize:   1024,
 	WriteBufferSize:  1024,
 	CheckOrigin: func(r *http.Request) bool {
-		return false
+		return true
 	},
 	EnableCompression: true,
 }
 
+// Home a first page that we send it to user
 func (ac *ApplicationConfig) Home(w http.ResponseWriter, r *http.Request) {
 	if http.MethodGet != r.Method {
 		http.Error(w, "Error in method usage.", http.StatusMethodNotAllowed)
@@ -45,6 +58,7 @@ func (ac *ApplicationConfig) Home(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// WsEndpointHandler my first endpoint for chat application
 func (ac *ApplicationConfig) WsEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	wsConn, err := TcpUpgrade.Upgrade(w, r, nil)
 	if err != nil {
@@ -58,10 +72,11 @@ func (ac *ApplicationConfig) WsEndpointHandler(w http.ResponseWriter, r *http.Re
 		Message:     "Upgraded to TCP",
 		MessageType: "Status",
 	}
+
 	err = wsConn.WriteJSON(resp)
 	if err != nil {
 		zerolog.Error().Msg(err.Error())
-		http.Error(w, "Error in sending the repsonse to user over TCP connection", http.StatusInternalServerError)
+		http.Error(w, "Error in sending the response to user over TCP connection", http.StatusInternalServerError)
 		return
 	}
 }
