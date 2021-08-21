@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/DapperBlondie/simple-chat-app/src/handlers"
 	zerolog "github.com/rs/zerolog/log"
 	"net/http"
 	"os"
@@ -26,6 +27,11 @@ func main() {
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt)
+
+	// I'm listening to handlers.WsChan here
+
+	zerolog.Log().Msg("I am listening to WsChannel ...")
+	go handlers.ListenToWsChannel()
 	go handlingPrettyShutdown(srv)
 
 	<-sigCh
