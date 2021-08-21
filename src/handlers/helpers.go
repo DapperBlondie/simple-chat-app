@@ -69,14 +69,23 @@ func ListenToWsChannel() {
 			users := getAllClients()
 			resp.Action = "LeftUser"
 			resp.MessageType = "JSON"
-			resp.Message = "Get all usernames"
+			resp.Message = e.Username + " Left !"
 			resp.UsersList = users
 			close(e.UserConn.CloseChan)
+			go broadCastToAll(resp)
+		case "broadcast":
+			resp.Action = "BroadCast"
+			resp.MessageType = "JSON"
+			resp.Message = e.Username + " : " + e.Message
 			go broadCastToAll(resp)
 		default:
 			resp.Action = e.Action + "; Action"
 			resp.Message = fmt.Sprintf("Some message you sent : %v", e.Username)
-			go broadCastToAll(resp)
+			resp.MessageType = "JSON"
+			err := e.UserConn.MyConn.WriteJSON(resp)
+			if err != nil {
+				return 
+			}
 		}
 	}
 }
