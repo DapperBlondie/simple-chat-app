@@ -21,27 +21,29 @@ func ListenForWS(conn *WSConnection) {
 		Message:  "",
 		UserConn: nil,
 	}
+
 	go func() {
-		<-conn.CloseChan
-		err := conn.MyConn.Close()
-		if err != nil {
-			return
+		for {
+			err := conn.MyConn.ReadJSON(&payload)
+			if err != nil {
+				err = conn.MyConn.WriteMessage(websocket.BinaryMessage, []byte(err.Error()))
+				if err != nil {
+					return
+				}
+			} else {
+				payload.UserConn = conn
+				Clients[conn] = payload.Username
+				WsChan <- payload
+			}
 		}
 	}()
 
-	for {
-		err := conn.MyConn.ReadJSON(&payload)
-		if err != nil {
-			err = conn.MyConn.WriteMessage(websocket.BinaryMessage, []byte(err.Error()))
-			if err != nil {
-				return
-			}
-		} else {
-			payload.UserConn = conn
-			Clients[conn] = payload.Username
-			WsChan <- payload
-		}
+	<-conn.CloseChan
+	err := conn.MyConn.Close()
+	if err != nil {
+		return
 	}
+	return
 }
 
 // ListenToWsChannel use for listening to our websocket channel and receiving *WsPayload
@@ -69,7 +71,7 @@ func ListenToWsChannel() {
 			resp.MessageType = "JSON"
 			resp.Message = "Get all usernames"
 			resp.UsersList = users
-			e.UserConn.CloseChan <- 0
+			close(e.UserConn.CloseChan)
 			go broadCastToAll(resp)
 		default:
 			resp.Action = e.Action + "; Action"

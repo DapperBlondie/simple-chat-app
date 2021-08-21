@@ -8,7 +8,7 @@ import (
 
 type WSConnection struct {
 	MyConn    *websocket.Conn
-	CloseChan chan int
+	CloseChan chan bool
 }
 
 type ApplicationConfig struct {
