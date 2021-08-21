@@ -15,7 +15,6 @@ const (
 )
 
 func main() {
-
 	srv := &http.Server{
 		Addr:              HOST,
 		Handler:           routes(),

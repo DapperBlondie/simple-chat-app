@@ -36,7 +36,7 @@ func (ac *ApplicationConfig) WsEndpointHandler(w http.ResponseWriter, r *http.Re
 		MessageType: "Status",
 	}
 
-	conn := &WSConnection{MyConn: wsConn}
+	conn := &WSConnection{MyConn: wsConn, CloseChan: make(chan int, 1)}
 	Clients[conn] = ""
 
 	err = wsConn.WriteJSON(resp)

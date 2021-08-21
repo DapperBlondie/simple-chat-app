@@ -21,6 +21,14 @@ func ListenForWS(conn *WSConnection) {
 		Message:  "",
 		UserConn: nil,
 	}
+	go func() {
+		<-conn.CloseChan
+		err := conn.MyConn.Close()
+		if err != nil {
+			return
+		}
+	}()
+
 	for {
 		err := conn.MyConn.ReadJSON(&payload)
 		if err != nil {
@@ -50,12 +58,23 @@ func ListenToWsChannel() {
 		case "usernames":
 			users := getAllClients()
 			resp.Action = "UsersList"
+			resp.MessageType = "JSON"
+			resp.Message = "Get all usernames"
 			resp.UsersList = users
-			broadCastToAll(resp)
+			go broadCastToAll(resp)
+		case "left":
+			delete(Clients, e.UserConn)
+			users := getAllClients()
+			resp.Action = "LeftUser"
+			resp.MessageType = "JSON"
+			resp.Message = "Get all usernames"
+			resp.UsersList = users
+			e.UserConn.CloseChan <- 0
+			go broadCastToAll(resp)
 		default:
 			resp.Action = e.Action + "; Action"
 			resp.Message = fmt.Sprintf("Some message you sent : %v", e.Username)
-			broadCastToAll(resp)
+			go broadCastToAll(resp)
 		}
 	}
 }
