@@ -19,6 +19,7 @@ func ListenForWS(conn *WSConnection) {
 		Action:   "",
 		Username: "",
 		Message:  "",
+		Target:   "",
 		UserConn: nil,
 	}
 
@@ -28,8 +29,9 @@ func ListenForWS(conn *WSConnection) {
 			if err != nil {
 				err = conn.MyConn.WriteMessage(websocket.BinaryMessage, []byte(err.Error()))
 				if err != nil {
-					return
+					continue
 				}
+				continue
 			} else {
 				payload.UserConn = conn
 				Clients[conn] = payload.Username
@@ -78,6 +80,11 @@ func ListenToWsChannel() {
 			resp.MessageType = "JSON"
 			resp.Message = e.Username + " : " + e.Message
 			go broadCastToAll(resp)
+		case "private":
+			resp.Action = "Private"
+			resp.Message = "JSON"
+			resp.Message = e.Username + " : " + e.Message
+			go sendPrivateMsg(resp, e.Target)
 		default:
 			resp.Action = e.Action + "; Action"
 			resp.Message = fmt.Sprintf("Some message you sent : %v", e.Username)
@@ -114,4 +121,19 @@ func getAllClients() []string {
 	sort.Strings(users)
 
 	return users
+}
+
+// sendPrivateMsg use for sending private *WsJsonResponse to specific user
+func sendPrivateMsg(resp *WsJsonResponse, target string) bool {
+	for wsConn, name := range Clients {
+		if name == target {
+			err := wsConn.MyConn.WriteJSON(resp)
+			if err != nil {
+				return false
+			}
+			return true
+		}
+	}
+
+	return false
 }

@@ -27,6 +27,7 @@ type WsPayload struct {
 	Action   string        `json:"action"`
 	Username string        `json:"username"`
 	Message  string        `json:"message"`
+	Target   string        `json:"target,omitempty"`
 	UserConn *WSConnection `json:"-"`
 }
 
