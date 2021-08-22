@@ -84,13 +84,13 @@ func ListenToWsChannel() {
 			resp.MessageType = "JSON"
 			err := e.UserConn.MyConn.WriteJSON(resp)
 			if err != nil {
-				return 
+				return
 			}
 		}
 	}
 }
 
-// broadCastToAll use for broadCasting to all users
+// broadCastToAll use for broadCasting to all
 func broadCastToAll(resp *WsJsonResponse) {
 	for client := range Clients {
 		err := client.MyConn.WriteJSON(resp)
